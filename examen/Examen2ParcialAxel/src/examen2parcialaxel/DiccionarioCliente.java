@@ -15,8 +15,10 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 
 /**
  *
@@ -27,6 +29,8 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     DataOutputStream flujoSalida;
     DataInputStream flujoEntrada;
     Socket cliente;
+    DefaultListModel dlm;
+    HashMap<String,String> dict;
     
     public DiccionarioCliente() throws UnknownHostException, IOException {
         initComponents();
@@ -34,10 +38,14 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         int pto = 9999;
         InetAddress dir = InetAddress.getByName(server);
         
+        dlm = new DefaultListModel();
+        jList1.setModel(dlm);
         
         cliente = new Socket(dir, pto);
         flujoSalida = new DataOutputStream(cliente.getOutputStream());
         flujoEntrada = new DataInputStream(cliente.getInputStream());
+        
+        listar();
     }
 
     /**
@@ -50,7 +58,7 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        jList1 = new javax.swing.JList<String>();
         jLabel1 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
@@ -67,6 +75,11 @@ public class DiccionarioCliente extends javax.swing.JFrame {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
+        });
+        jList1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jList1KeyPressed(evt);
+            }
         });
         jScrollPane1.setViewportView(jList1);
 
@@ -162,6 +175,19 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField1ActionPerformed
 
+    private void jList1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jList1KeyPressed
+        // TODO add your handling code here:
+        
+        if(evt.getKeyCode()==127){//La tecla oprimida es Supr
+            int selectedIndex = jList1.getSelectedIndex();
+            if(selectedIndex >=0)
+                dlm.remove(selectedIndex);
+        }
+        
+        
+        
+    }//GEN-LAST:event_jList1KeyPressed
+
     
     public void insertar() throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
@@ -179,7 +205,8 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         System.out.println(answer);
     }
     
-    public void listar() throws IOException{            
+    public void listar() throws IOException{  
+            dict=new HashMap<>();
             ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
             DataOutputStream flujoAux = new DataOutputStream(baos);
             flujoAux.writeInt(2);
@@ -194,10 +221,29 @@ public class DiccionarioCliente extends javax.swing.JFrame {
                 int n = flujoEntrada.readInt();
                 flujoEntrada.read(buffer, 0, n);
                 String palabra = new String(buffer, 0, n);
+                dlm.addElement(palabra);
                 n = flujoEntrada.readInt();
                 flujoEntrada.read(buffer, 0, n);
                 String significado = new String(buffer, 0, n);
+                
+                dict.put(palabra, significado);
             }
+    }
+    
+    public void borrar() throws IOException{  
+            String palabra = (String) dlm.get(jList1.getSelectedIndex());
+            System.out.println("\nEnviando operacion "+palabra.length());
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
+            DataOutputStream dos2 = new DataOutputStream(baos); 
+            
+            dos2.writeInt(1);
+            dos2.writeInt(palabra.length());
+            dos2.write(palabra.getBytes());
+            
+            flujoSalida.write(baos.toByteArray());
+            flujoSalida.flush();
+            int answer = flujoEntrada.readInt();
+            System.out.println("\nRespuesta "+answer);
     }
     /**
      * @param args the command line arguments
@@ -209,7 +255,7 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JList jList1;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
