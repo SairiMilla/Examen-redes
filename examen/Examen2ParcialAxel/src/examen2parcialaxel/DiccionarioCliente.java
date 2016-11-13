@@ -34,16 +34,9 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     
     public DiccionarioCliente() throws UnknownHostException, IOException {
         initComponents();
-        String server = "127.0.0.1";
-        int pto = 9999;
-        InetAddress dir = InetAddress.getByName(server);
+
+    
         
-        dlm = new DefaultListModel();
-        jList1.setModel(dlm);
-        
-        cliente = new Socket(dir, pto);
-        flujoSalida = new DataOutputStream(cliente.getOutputStream());
-        flujoEntrada = new DataInputStream(cliente.getInputStream());
         
         listar();
     }
@@ -230,20 +223,41 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
         DataOutputStream dos2 = new DataOutputStream(baos);  
         
+        String server = "127.0.0.1";
+            int pto = 9999;
+            InetAddress dir = InetAddress.getByName(server);
+        
+            cliente = new Socket(dir, pto);
+            flujoSalida = new DataOutputStream(cliente.getOutputStream());
+            flujoEntrada = new DataInputStream(cliente.getInputStream());
+
         dos2.writeInt(0);
         
         dos2.writeInt(jTextField1.getText().length());
         dos2.writeInt(jTextArea1.getText().length());
         dos2.write(jTextField1.getText().getBytes());
-        dos2.write(jTextField1.getText().getBytes());
+        dos2.write(jTextArea1.getText().getBytes());
         flujoSalida.write(baos.toByteArray());
         flujoSalida.flush();
+        jTextField1.setText("");
+        jTextArea1.setText("");
         int answer = flujoEntrada.readInt();
         System.out.println(answer);
+        cliente.close();
         listar();
     }
     
     public void listar() throws IOException{  
+            String server = "127.0.0.1";
+            int pto = 9999;
+            InetAddress dir = InetAddress.getByName(server);
+        
+            cliente = new Socket(dir, pto);
+            flujoSalida = new DataOutputStream(cliente.getOutputStream());
+            flujoEntrada = new DataInputStream(cliente.getInputStream());
+
+            dlm = new DefaultListModel();
+            jList1.setModel(dlm);
             dict=new HashMap<>();
             ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
             DataOutputStream flujoAux = new DataOutputStream(baos);
@@ -266,22 +280,35 @@ public class DiccionarioCliente extends javax.swing.JFrame {
                 
                 dict.put(palabra, significado);
             }
+            
+            cliente.close();
     }
     
-    public void borrar() throws IOException{  
+    public void borrar() throws IOException{ 
+        
+            String server = "127.0.0.1";
+            int pto = 9999;
+            InetAddress dir = InetAddress.getByName(server);
+        
+            cliente = new Socket(dir, pto);
+            flujoSalida = new DataOutputStream(cliente.getOutputStream());
+            flujoEntrada = new DataInputStream(cliente.getInputStream());
+
+        
             String palabra = (String) dlm.get(jList1.getSelectedIndex());
             System.out.println("\nEnviando operacion "+palabra.length());
             ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
             DataOutputStream dos2 = new DataOutputStream(baos); 
             
+            
             dos2.writeInt(1);
             dos2.writeInt(palabra.length());
             dos2.write(palabra.getBytes());
-            
             flujoSalida.write(baos.toByteArray());
             flujoSalida.flush();
             int answer = flujoEntrada.readInt();
             System.out.println("\nRespuesta "+answer);
+            cliente.close();
             listar();
     }
     /**
