@@ -76,6 +76,11 @@ public class DiccionarioCliente extends javax.swing.JFrame {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jList1MouseClicked(evt);
+            }
+        });
         jList1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 jList1KeyPressed(evt);
@@ -96,6 +101,11 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         jScrollPane3.setViewportView(jLabel2);
 
         jButton3.setText("Eliminar");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
 
         jTextField1.setText("jTextField1");
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
@@ -181,13 +191,40 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         if(evt.getKeyCode()==127){//La tecla oprimida es Supr
             int selectedIndex = jList1.getSelectedIndex();
             if(selectedIndex >=0)
-                dlm.remove(selectedIndex);
+                try {
+                    borrar();
+            } catch (IOException ex) {
+                Logger.getLogger(DiccionarioCliente.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         
         
         
     }//GEN-LAST:event_jList1KeyPressed
 
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+            // TODO add your handling code here:
+        try{
+            borrar();
+        }catch(Exception e){
+        }
+        
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jList1MouseClicked
+        int selectedIndex = jList1.getSelectedIndex();
+        if(selectedIndex >=0)
+            mostrarDefinicion();
+            
+       
+        
+    }//GEN-LAST:event_jList1MouseClicked
+
+    private void mostrarDefinicion() {
+        jLabel2.setText(dict.get((String) dlm.get(jList1.getSelectedIndex())));
+        
+        
+    }
     
     public void insertar() throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
@@ -203,6 +240,7 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         flujoSalida.flush();
         int answer = flujoEntrada.readInt();
         System.out.println(answer);
+        listar();
     }
     
     public void listar() throws IOException{  
@@ -244,6 +282,7 @@ public class DiccionarioCliente extends javax.swing.JFrame {
             flujoSalida.flush();
             int answer = flujoEntrada.readInt();
             System.out.println("\nRespuesta "+answer);
+            listar();
     }
     /**
      * @param args the command line arguments
