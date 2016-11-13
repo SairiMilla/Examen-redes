@@ -119,29 +119,31 @@ grow(Dict d)
 void
 DictInsert(Dict d, const char *key, const char *value)
 {
-    struct elt *e;
-    unsigned long h;
+    if(DictSearch(d, key)==0){
+        struct elt *e;
+        unsigned long h;
 
-    assert(key);
-    assert(value);
+        assert(key);
+        assert(value);
 
-    e = malloc(sizeof(*e));
+        e = malloc(sizeof(*e));
 
-    assert(e);
+        assert(e);
 
-    e->key = strdup(key);
-    e->value = strdup(value);
+        e->key = strdup(key);
+        e->value = strdup(value);
 
-    h = hash_function(key) % d->size;
+        h = hash_function(key) % d->size;
 
-    e->next = d->table[h];
-    d->table[h] = e;
+        e->next = d->table[h];
+        d->table[h] = e;
 
-    d->n++;
+        d->n++;
 
-    /* grow table if there is not enough room */
-    if(d->n >= d->size * MAX_LOAD_FACTOR) {
-        grow(d);
+        /* grow table if there is not enough room */
+        if(d->n >= d->size * MAX_LOAD_FACTOR) {
+            grow(d);
+        }
     }
 }
 
