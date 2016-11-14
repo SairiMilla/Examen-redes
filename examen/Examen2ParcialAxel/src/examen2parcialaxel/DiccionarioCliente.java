@@ -31,13 +31,13 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     Socket cliente;
     DefaultListModel dlm;
     HashMap<String,String> dict;
+    public static ManejadorMulticast mult=null;
     
     public DiccionarioCliente() throws UnknownHostException, IOException {
-        initComponents();
-
-    
-        
-        
+        if(mult==null){
+            mult=new ManejadorMulticast();
+        }
+        initComponents(); 
         listar();
     }
 
@@ -223,11 +223,7 @@ public class DiccionarioCliente extends javax.swing.JFrame {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(3000*4);
         DataOutputStream dos2 = new DataOutputStream(baos);  
         
-        String server = "127.0.0.1";
-            int pto = 9999;
-            InetAddress dir = InetAddress.getByName(server);
-        
-            cliente = new Socket(dir, pto);
+            cliente = mult.conectar();
             flujoSalida = new DataOutputStream(cliente.getOutputStream());
             flujoEntrada = new DataInputStream(cliente.getInputStream());
 
@@ -248,11 +244,9 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     }
     
     public void listar() throws IOException{  
-            String server = "127.0.0.1";
-            int pto = 9999;
-            InetAddress dir = InetAddress.getByName(server);
+            
         
-            cliente = new Socket(dir, pto);
+            cliente = mult.conectar();
             flujoSalida = new DataOutputStream(cliente.getOutputStream());
             flujoEntrada = new DataInputStream(cliente.getInputStream());
 
@@ -286,11 +280,8 @@ public class DiccionarioCliente extends javax.swing.JFrame {
     
     public void borrar() throws IOException{ 
         
-            String server = "127.0.0.1";
-            int pto = 9999;
-            InetAddress dir = InetAddress.getByName(server);
-        
-            cliente = new Socket(dir, pto);
+    
+            cliente = mult.conectar();
             flujoSalida = new DataOutputStream(cliente.getOutputStream());
             flujoEntrada = new DataInputStream(cliente.getInputStream());
 
