@@ -23,8 +23,8 @@ import javax.swing.JOptionPane;
  * @author Sairi
  */
 public class ManejadorMulticast {
-    public static final String MCAST_ADDR = "230.0.0.1"; //dir clase D valida, grupo al que nos vamos a unir
-    public static final int MCAST_PORT = 9013; //puerto multicast
+    public static final String MCAST_ADDR = "225.0.0.37"; //dir clase D valida, grupo al que nos vamos a unir
+    public static final int MCAST_PORT = 12345; //puerto multicast
     public static final int DGRAM_BUF_LEN = 512; //tamaño del buffer
     //public static final int TIMEOUT = 1; // tiempo para desconectar
 
@@ -50,7 +50,7 @@ public class ManejadorMulticast {
             Thread th_exp = new Thread(exp);
             th_recv.start();
             th_exp.start();
-            System.out.println("Deteniendo descubrimiento. Intentando conexion.");
+            exp.setStop(true);
             /**/
         }catch(Exception e){
             e.printStackTrace();
@@ -58,29 +58,28 @@ public class ManejadorMulticast {
     }
 
     public Socket conectar(){
-            exp.setStop(true);
-            recv.setStop(true);
             Socket s=null;
             int i=0;
         while (true) {
-            if(i==servidores.size())
-                i=0;
-            String[] data = (servidores.get(i)).split(":");
-            System.out.println(data[1]);
-            Integer port = Integer.valueOf(data[1]);
-            
-            try{
-                s = new Socket(data[0].substring(1),port);
-                BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                String answer = input.readLine();
-                System.out.println(answer);
-            }catch(Exception e){
-                i++;
-                continue;
+            if(!servidores.isEmpty()){
+                if(i==servidores.size())
+                    i=0;
+                String[] data = (servidores.get(i)).split(":");
+                System.out.println(data[1]);
+                Integer port = Integer.valueOf(data[1]);
+
+                try{
+                    s = new Socket(data[0].substring(1),port);
+                }catch(Exception e){
+                    i++;
+                    continue;
+                }
+                exp.setStop(false);
+                recv.setStop(false);
+                break;
             }
-            exp.setStop(false);
-            recv.setStop(false);
-            break;
+            else{
+            }
 
         }
              // Muestro mensjae con lo que me envia el servidor, solo para probar
@@ -132,9 +131,12 @@ public class ManejadorMulticast {
                 while(!stop){
                     byte[] buf = new byte[DGRAM_BUF_LEN];//crea arreglo de bytes 
                     DatagramPacket recv = new DatagramPacket(buf,buf.length);//crea el datagram packet a recibir
+                    System.out.println("esperando puerto...");
                     socket.receive(recv);// ya se tiene el datagram packet
                     //System.out.println("Host remoto: "+recv.getAddress()); 
                     //System.out.println("Puerto: "+ recv.getPort());
+                    
+                    System.out.println("puerto recibido");
                     byte [] data = recv.getData(); //aqui no se entienden los datos
                     String port_str = new String(data);
                     Integer port_num = Integer.parseInt(port_str.trim());
@@ -143,6 +145,7 @@ public class ManejadorMulticast {
                         addNewServer(address);
                         System.out.println("Nuevo servidor encontrado: "+recv.getAddress()+":"+port_num);
                     }else{
+                        System.out.println(servidores.get(servidores.indexOf(address)));
                         srvttl.set(servidores.indexOf(address),TTL);
                     }
                 }
