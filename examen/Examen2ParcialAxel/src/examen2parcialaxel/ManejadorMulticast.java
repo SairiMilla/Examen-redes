@@ -78,6 +78,8 @@ public class ManejadorMulticast {
                 i++;
                 continue;
             }
+            exp.setStop(false);
+            recv.setStop(false);
             break;
 
         }
